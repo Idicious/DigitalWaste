@@ -122,6 +122,7 @@ public class HonoursWalker extends FileWalker {
 	private void initializeAcceptedFormats() {
 		// Image formats
 		ArrayList<String> imageFormats = new ArrayList<String>();
+		acceptedFormats.put("image", imageFormats);
 		
 		imageFormats.add(".jpg");
 		imageFormats.add(".jpeg");
@@ -129,32 +130,27 @@ public class HonoursWalker extends FileWalker {
 		imageFormats.add(".bmp");
 		imageFormats.add(".gif");
 		
-		acceptedFormats.put("image", imageFormats);
-		
 		// Audio formats
 		ArrayList<String> audioFormats = new ArrayList<String>();
+		acceptedFormats.put("audio", audioFormats);
 		
 		audioFormats.add(".mp3");
 		audioFormats.add(".wav");
 		audioFormats.add(".mid");
 		
-		acceptedFormats.put("audio", audioFormats);
-		
 		// Video formats
 		ArrayList<String> videoFormats = new ArrayList<String>();
+		acceptedFormats.put("video", videoFormats);
 		
 		videoFormats.add(".mp4");
 		
-		acceptedFormats.put("video", videoFormats);
-		
 		// Document formats
 		ArrayList<String> docFormats = new ArrayList<String>();
+		acceptedFormats.put("doc", docFormats);
 		
 		docFormats.add(".txt");
 		docFormats.add(".doc");
 		docFormats.add(".pdf");
-		
-		acceptedFormats.put("doc", docFormats);
 	}
 
 }
