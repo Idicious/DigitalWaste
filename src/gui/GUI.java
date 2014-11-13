@@ -30,6 +30,8 @@ public class GUI extends JFrame {
 		this.setLookAndFeel();
 			
 		this.setTitle("Filewalker");
+		this.setMinimumSize(new Dimension(250, 100));
+		
 		this.setJMenuBar(makeMenu());
 		
 		this.contents = getContentPane();
@@ -38,7 +40,6 @@ public class GUI extends JFrame {
 		this.makeContentWindow();
 		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setMinimumSize(new Dimension(250, 100));
 		
 		this.pack();
 		this.setLocationRelativeTo(null); // Centers application on screen
@@ -77,8 +78,9 @@ public class GUI extends JFrame {
 		});
 		
 
-		this.textArea = new JTextArea("Welcome, choose a file. \n\n", 10, 30);
+		this.textArea = new JTextArea("Choose a file or directory, the program will copy all files under selected. \n\n", 10, 30);
 		this.textArea.setEditable(false);
+		this.textArea.setWrapStyleWord(true);
 		
 		this.scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		

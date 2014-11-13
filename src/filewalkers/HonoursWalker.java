@@ -58,7 +58,7 @@ public class HonoursWalker extends FileWalker {
 			getController().outputLine("Copying " + file);
 			try {
 				Path target = new File(targetPath+file.toFile().getName()).toPath();
-				Files.copy(file, target);
+				Files.copy(file, target); // Copies file to specified Path
 				
 				this.addToDB(target, category);
 				getController().outputLine("Complete");
