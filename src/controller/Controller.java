@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import filewalkers.*;
@@ -50,7 +51,7 @@ public class Controller {
 	 */
 	public void choosePath(Path path)
 	{
-		thisWalker.walk(new HonoursWalker(path, "/tmp/", 1.0));
+		thisWalker.walk(new HonoursWalker(path, new File("").getAbsolutePath()+"/tmp/"));
 	}
 	
 	/**

@@ -10,7 +10,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Filewalker that randomly chooses files to display.
@@ -18,25 +20,21 @@ import java.util.Random;
  *
  */
 public class HonoursWalker extends FileWalker {
-
-	private Random rand = new Random();
-	private double chance;
 	
 	private String targetPath;
 	private MySQL db;
 	
-	private ArrayList<String> acceptedFormats = new ArrayList<>();
+	private HashMap<String, ArrayList<String>> acceptedFormats = new HashMap<String, ArrayList<String>>();
 	
 	/**
 	 * 
-	 * @param start Start path
-	 * @param chance Double between 0.0 and 1.0 indicating % of files you want. 0.01 equals 1%, 1.0 equals 100%
+	 * @param start
+	 * @param target path to where files will be copied.
 	 */
-	public HonoursWalker(Path start, String target, double chance) {
+	public HonoursWalker(Path start, String target) {
 		super(start);
 		
-		this.chance = chance;
-		this.targetPath = new File("").getAbsolutePath() + target;
+		this.targetPath = target;
 		this.db = new MySQL();
 		this.initializeAcceptedFormats();
 		
@@ -56,13 +54,14 @@ public class HonoursWalker extends FileWalker {
 
 	@Override
 	protected FileVisitResult onVisitFile(Path file, BasicFileAttributes attrs) {
-		if(rand.nextDouble() < chance) {
+		String category = this.extensionAccepted(file);
+		if(category != null) {
 			getController().outputLine("Copying " + file);
 			try {
 				Path target = new File(targetPath+file.toFile().getName()).toPath();
 				Files.copy(file, target, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 				
-				addToDB(target);
+				addToDB(target, category);
 				getController().outputLine("Complete");
 			} catch (IOException e) {
 				getController().outputLine(e.getMessage());
@@ -71,35 +70,7 @@ public class HonoursWalker extends FileWalker {
 		
 		return FileVisitResult.CONTINUE;
 	}
-
-	private void addToDB(Path target) {
-		String path = target.toString();
-		String category = getCategory(path);
-		
-		String query = "INSERT INTO data (path, category) VALUES ("+path+","+category+")";
-		db.push(query);
-	}
-
-	private String getCategory(String path) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
-	private void initializeAcceptedFormats() {
-		
-		// Image formats
-		this.acceptedFormats.add(".jpg");
-		this.acceptedFormats.add(".png");
-		this.acceptedFormats.add(".bmp");
-		
-		// Audio formats
-		this.acceptedFormats.add(".mp3");
-		this.acceptedFormats.add(".wav");
-		
-		// Video formats
-		this.acceptedFormats.add(".mp4");
-	}
-
 	@Override
 	protected FileVisitResult onVisitFileFailed(Path file, IOException exc) {
 		// TODO Auto-generated method stub
@@ -111,6 +82,83 @@ public class HonoursWalker extends FileWalker {
 		db.disconnect();
 		getController().outputLine("Operation complete.");
 		return null;
+	}
+	
+	/**
+	 * Inserts path and category into the database.
+	 * @param target
+	 * @param category
+	 */
+	private void addToDB(Path target, String category) {
+		String path = target.toString();
+		
+		String query = "INSERT INTO data (path, category) VALUES ('"+path+"', '"+category+"')";
+		db.push(query);
+	}
+	
+	/**
+	 * Searches the acceptedFormat HashMap for the given Path's extension, if found it returns
+	 * the key which is the category string. Else it it returns null.
+	 * @param file
+	 * @return key of acceptedFormats which is the category String for database.
+	 */
+	private String extensionAccepted(Path file) {
+		String path = file.toString();
+		Set<String> keys = acceptedFormats.keySet();
+		
+		for(String key : keys) {
+			Iterator<String> it = acceptedFormats.get(key).iterator();
+			
+			while(it.hasNext()) {
+				String ext = it.next();
+				
+				if(path.contains(ext)) {
+					return key;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Adds all accepted file format extensions to the acceptedFormats array
+	 */
+	private void initializeAcceptedFormats() {
+		// Image formats
+		ArrayList<String> imageFormats = new ArrayList<String>();
+		
+		imageFormats.add(".jpg");
+		imageFormats.add(".jpeg");
+		imageFormats.add(".png");
+		imageFormats.add(".bmp");
+		imageFormats.add(".gif");
+		
+		acceptedFormats.put("image", imageFormats);
+		
+		// Audio formats
+		ArrayList<String> audioFormats = new ArrayList<String>();
+		
+		audioFormats.add(".mp3");
+		audioFormats.add(".wav");
+		audioFormats.add(".mid");
+		
+		acceptedFormats.put("audio", audioFormats);
+		
+		// Video formats
+		ArrayList<String> videoFormats = new ArrayList<String>();
+		
+		videoFormats.add(".mp4");
+		
+		acceptedFormats.put("video", videoFormats);
+		
+		// Document formats
+		ArrayList<String> docFormats = new ArrayList<String>();
+		
+		docFormats.add(".txt");
+		docFormats.add(".doc");
+		
+		acceptedFormats.put("doc", docFormats);
 	}
 
 }
