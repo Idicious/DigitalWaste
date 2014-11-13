@@ -2,6 +2,8 @@ package helpsers;
 
 import java.sql.*;
 
+import controller.Controller;
+
 public class MySQL {
 	// JDBC driver name and database URL
 	private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
@@ -11,13 +13,20 @@ public class MySQL {
 	private static final String USER = "root";
 	private static final String PASS = "";
 	
+	private static Controller out = Controller.getInstance();
+	
 	private Connection conn;
 	
 	public MySQL()
 	{
-		conn = connect();
+		this.conn = this.connect();
 	}
 	
+	/**
+	 * Used to perform SELECT queries on the database.
+	 * @param query
+	 * @return
+	 */
 	public ResultSet pull(String query){
 		Statement stmt;
 		try {
@@ -26,13 +35,17 @@ public class MySQL {
 			stmt.close();
 			return rs;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			out.outputLine(e.getMessage());
 		}
 		return null;
 	}
 	
+	/**
+	 * Used to perform INSERT, UPDATE and DELETE queries on the database
+	 * @param query
+	 * @return
+	 */
 	public boolean push(String query){
-		Connection conn = connect();
 		Statement stmt;
 		int result = -1;
 		try {
@@ -40,7 +53,7 @@ public class MySQL {
 			result = stmt.executeUpdate(query);
 			stmt.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			out.outputLine(e.getMessage());
 		}
 		if(result == 1){
 			return true;
@@ -54,20 +67,24 @@ public class MySQL {
 			conn.close();
 			return true;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			out.outputLine(e.getMessage());
 		}
 		
 		return false;
 	}
 	
+	/**
+	 * Opens and returns a connection to the database
+	 * @return
+	 */
 	private Connection connect(){
 		try{
 			Class.forName(JDBC_DRIVER);
 			return DriverManager.getConnection(DB_URL,USER,PASS);
 		}catch(SQLException se){
-			se.printStackTrace();
+			out.outputLine(se.getMessage());
 		}catch(Exception e){
-			e.printStackTrace();
+			out.outputLine(e.getMessage());
 		}
 		return null;
 	}

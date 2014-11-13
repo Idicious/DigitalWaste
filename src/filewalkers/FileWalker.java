@@ -84,7 +84,7 @@ public abstract class FileWalker implements Runnable
 			}
 		});
 		
-		onComplete();
+		this.onComplete();
 	}
 	
 	/**

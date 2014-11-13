@@ -11,11 +11,11 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Filewalker that randomly chooses files to display.
+ * Copies files with extension contained in acceptedFormats HashMap to given Directory path. Then
+ * saves the copied directory path and category to a MySQL database.
  * @author dsherman
  *
  */
@@ -24,10 +24,11 @@ public class HonoursWalker extends FileWalker {
 	private String targetPath;
 	private MySQL db;
 	
+	// HashMap containing accepted extensions with as Key category, Value array of extensions
 	private HashMap<String, ArrayList<String>> acceptedFormats = new HashMap<String, ArrayList<String>>();
 	
 	/**
-	 * 
+	 * Default constructor
 	 * @param start
 	 * @param target path to where files will be copied.
 	 */
@@ -36,19 +37,18 @@ public class HonoursWalker extends FileWalker {
 		
 		this.targetPath = target;
 		this.db = new MySQL();
-		this.initializeAcceptedFormats();
 		
+		this.initializeAcceptedFormats();
+		getController().outputLine("\n-- starting --\n");
 	}
 
 	@Override
 	protected FileVisitResult onPreVisitDir(Path dir, BasicFileAttributes attrs) {
-		// TODO Auto-generated method stub
 		return FileVisitResult.CONTINUE;
 	}
 
 	@Override
 	protected FileVisitResult onPostVisitDir(Path dir, IOException exc) {
-		// TODO Auto-generated method stub
 		return FileVisitResult.CONTINUE;
 	}
 
@@ -72,15 +72,15 @@ public class HonoursWalker extends FileWalker {
 	}
 	
 	@Override
-	protected FileVisitResult onVisitFileFailed(Path file, IOException exc) {
-		// TODO Auto-generated method stub
+	protected FileVisitResult onVisitFileFailed(Path file, IOException e) {
+		getController().outputLine(e.getMessage());
 		return FileVisitResult.CONTINUE;
 	}
 
 	@Override
 	protected Object onComplete() {
 		db.disconnect();
-		getController().outputLine("Operation complete.");
+		getController().outputLine("\n-- operation complete --\n");
 		return null;
 	}
 	
@@ -98,21 +98,17 @@ public class HonoursWalker extends FileWalker {
 	
 	/**
 	 * Searches the acceptedFormat HashMap for the given Path's extension, if found it returns
-	 * the key which is the category string. Else it it returns null.
+	 * the key, else it returns null.
 	 * @param file
 	 * @return key of acceptedFormats which is the category String for database.
 	 */
 	private String extensionAccepted(Path file) {
-		String path = file.toString();
 		Set<String> keys = acceptedFormats.keySet();
+		String path = file.toString();
 		
 		for(String key : keys) {
-			Iterator<String> it = acceptedFormats.get(key).iterator();
-			
-			while(it.hasNext()) {
-				String ext = it.next();
-				
-				if(path.contains(ext)) {
+			for(String ext : acceptedFormats.get(key)) {
+				if(path.endsWith(ext)) {
 					return key;
 				}
 			}
@@ -122,7 +118,7 @@ public class HonoursWalker extends FileWalker {
 	}
 	
 	/**
-	 * Adds all accepted file format extensions to the acceptedFormats array
+	 * Adds all accepted file format extensions to the acceptedFormats HashMap
 	 */
 	private void initializeAcceptedFormats() {
 		// Image formats
@@ -157,6 +153,7 @@ public class HonoursWalker extends FileWalker {
 		
 		docFormats.add(".txt");
 		docFormats.add(".doc");
+		docFormats.add(".pdf");
 		
 		acceptedFormats.put("doc", docFormats);
 	}

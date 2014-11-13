@@ -28,7 +28,7 @@ public class ExampleWalker extends FileWalker {
 
 	@Override
 	protected FileVisitResult onPostVisitDir(Path dir, IOException exc) {
-		//getController().outputLine(++counter + ": " + dir);
+		getController().outputLine(++counter + ": " + dir);
 		return FileVisitResult.CONTINUE;
 	}
 
