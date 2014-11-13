@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,9 +58,9 @@ public class HonoursWalker extends FileWalker {
 			getController().outputLine("Copying " + file);
 			try {
 				Path target = new File(targetPath+file.toFile().getName()).toPath();
-				Files.copy(file, target, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(file, target);
 				
-				addToDB(target, category);
+				this.addToDB(target, category);
 				getController().outputLine("Complete");
 			} catch (IOException e) {
 				getController().outputLine(e.getMessage());
