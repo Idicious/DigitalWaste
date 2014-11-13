@@ -73,16 +73,16 @@ public class GUI extends JFrame {
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
 		          File selectedFile = fileChooser.getSelectedFile();
 		          Controller.getInstance().choosePath(selectedFile.toPath());
-		        }
+		        } 
 			}
 		});
 		
 
-		this.textArea = new JTextArea("Choose a file or directory, the program will copy all files under selected. \n\n", 10, 30);
+		this.textArea = new JTextArea("Choose a file or directory. \n\n", 10, 30);
 		this.textArea.setEditable(false);
 		this.textArea.setWrapStyleWord(true);
 		
-		this.scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		this.scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
 		this.contents.add(open, BorderLayout.NORTH);
 		this.contents.add(scrollPane, BorderLayout.CENTER);
@@ -131,11 +131,20 @@ public class GUI extends JFrame {
 			JMenuItem about = new JMenuItem("About");
 			about.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) { 
-					/* To implement */
+					openInfoBox();
 				}
 			});
 			help.add(about);
     	
 		return menuBar;
+	}
+
+	protected void openInfoBox() {
+		String title = "Info";
+		String message =  "This program iterates over the filesystem from the chosen directory or file downwards. \n";
+			   message += "Every file it finds it will attempt to copy to a destination directory and add an entry \n";
+			   message += "to the database containing the copied path and extension group. \n";
+			    
+		JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
 	}
 }
