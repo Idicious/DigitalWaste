@@ -50,7 +50,7 @@ public class Controller {
 	 */
 	public void choosePath(Path path)
 	{
-		thisWalker.walk(new ExampleWalker(path));
+		thisWalker.walk(new HonoursWalker(path, "/tmp/", 1.0));
 	}
 	
 	/**
