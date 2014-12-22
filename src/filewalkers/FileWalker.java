@@ -19,24 +19,13 @@ import controller.Controller;
  */
 public abstract class FileWalker implements Runnable
 {
-	private Path start; 
+	private WalkerThreadHandeler handler; // Reference to class keeping track of all active FileWalkers
 	
-	/**
-	 * Protected constructor invoked by subclasses
-	 * @param start Directory to start walking from
-	 */
-	protected FileWalker(Path start) {
-		this.start = start;
-	}
+	private boolean canceled; // If set to true stops the FileWalker at the beginning of its next action
+	private boolean pauzed; // If set to true pauzes the FileWalker, resumes when set to false
 	
-	/**
-	 * Returns the controller instance, controller is used for interacting with the GUI.
-	 * @return
-	 */
-	protected Controller getController()
-	{
-		return Controller.getInstance();
-	}
+	private Path start; // Path the FileWalker starts from
+	private Path target; // Utility Path, for example can be copied to
 	
 	/**
 	 * Invokes the walkFiles() method
@@ -44,10 +33,25 @@ public abstract class FileWalker implements Runnable
 	@Override
 	public void run() {
 		try {
+			this.handler.register(this); 
 			walkFiles();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Stops the filewalker. It will stop at the start of it's next operation
+	 */
+	public void stop() {
+		this.canceled = true;
+	}
+	
+	/**
+	 * Toggles pauze on the filewalker. It will pauze at the start of it's next operation
+	 */
+	public void pauze() {
+		pauzed = pauzed ? false : true;
 	}
 
 	/**
@@ -59,32 +63,90 @@ public abstract class FileWalker implements Runnable
 	{
 		Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
 			
+			/**
+			 * Checks if pauzed, if so goes into a while loop untill pauzed is false
+			 */
+			private void checkPauzed() {
+				while(pauzed) { 
+					try{
+						Thread.sleep(100); // Sleep thread to reduce cpu use
+					} catch(Exception e) {
+						// No action, will continue busy waiting
+					}
+				}
+			}
+			
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir,
 					BasicFileAttributes attrs) throws IOException {
+				if(canceled) return FileVisitResult.TERMINATE;
+				checkPauzed();
+				
 				return onPreVisitDir(dir, attrs);
 			}
 			
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc)
 					throws IOException {
+				if(canceled) return FileVisitResult.TERMINATE;
+				checkPauzed();
+				
 				return onPostVisitDir(dir, exc);
 			}
 			
 			@Override
 			public FileVisitResult visitFile(Path file,
 					BasicFileAttributes attrs) throws IOException {
+				if(canceled) return FileVisitResult.TERMINATE;
+				checkPauzed();
+				
 				return onVisitFile(file, attrs);
 			}
 			
 			@Override
 			public FileVisitResult visitFileFailed(Path file, IOException exc)
 					throws IOException {
+				if(canceled) return FileVisitResult.TERMINATE;
+				checkPauzed();
+				
 				return onVisitFileFailed(file, exc);
 			}
 		});
 		
-		this.onComplete();
+		this.postWalk();
+	}
+	
+	/**
+	 * Performed after walkFileTree finishes
+	 */
+	private void postWalk() {
+		if(!canceled) {
+			this.onComplete();
+		} else {
+			Controller.getInstance().outputLine("\n-- stopped --\n");
+		}
+		
+		this.handler.remove(this); 
+	}
+
+	public Path getStart() {
+		return this.start;
+	}
+	
+	public Path getTarget() {
+		return this.target;
+	}
+	
+	public void setStart(Path start) {
+		this.start = start;
+	}
+	
+	public void setTarget(Path target) {
+		this.target = target;
+	}
+	
+	public void setHandler(WalkerThreadHandeler handler) {
+		this.handler = handler;
 	}
 	
 	/**

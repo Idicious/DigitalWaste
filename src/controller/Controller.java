@@ -1,6 +1,5 @@
 package controller;
 
-import java.io.File;
 import java.nio.file.Path;
 
 import filewalkers.*;
@@ -19,24 +18,27 @@ public class Controller {
 	
 	private static boolean initialized = false;
 	
-	private static GUI thisGui;
-	private static WalkerThreadHandeler thisWalker;
+	protected static GUI thisGui;
+	protected static WalkerThreadHandeler thisWalker;
 	private static Controller controller;
+	
+	private Path startPath;
+	private Path targetPath;
 	
 	/**
 	 * Private constructor to enforce singleton patern
 	 */
-	private Controller() { }
+	protected Controller() { }
 	
 	/**
 	 * Returns instance of the Controller
 	 * @return
 	 */
-	public static Controller getInstance() 
+	public static synchronized Controller getInstance() 
 	{
 		if(initialized) {
 			if(controller == null) {
-				controller = new Controller();
+				controller = new HonoursController();
 			}
 			
 			return controller;
@@ -46,12 +48,18 @@ public class Controller {
 	}
 	
 	/**
-	 * Iterates from the given Path downwards.
-	 * @param path
+	 * Starts the walker
 	 */
-	public void choosePath(Path path)
+	public void start() throws InvalidPathException 
 	{
-		thisWalker.walk(new HonoursWalker(path, new File("").getAbsolutePath()+"/tmp/"));
+		this.validate();
+		thisWalker.walk(new HonoursWalker(startPath, targetPath));
+	}
+	
+	protected void validate() throws InvalidPathException
+	{
+		if(startPath == null) throw new InvalidPathException("You must select a start location");
+		if(!startPath.toFile().exists()) throw new InvalidPathException("Start path does not exist");
 	}
 	
 	/**
@@ -68,8 +76,24 @@ public class Controller {
 			
 			initialized = true;
 		} else {
-			throw new IllegalStateException("Null values not allowed.");
+			throw new IllegalStateException("Both GUI and Walker handler must be set");
 		}
+	}
+	
+	public Path getStart() {
+		return this.startPath;
+	}
+	
+	public Path getTarget() {
+		return this.targetPath;
+	}
+	
+	public void setStart(Path p) {
+		this.startPath = p;
+	}
+	
+	public void setTarget(Path p) {
+		this.targetPath = p;
 	}
 
 	/**
@@ -79,5 +103,12 @@ public class Controller {
 	 */
 	public void outputLine(String string) {
 		thisGui.displayLine(string, true);
+	}
+
+	/**
+	 * Stops what the application is doing
+	 */
+	public void stop() {
+		thisWalker.stopWalkers();
 	}
 }

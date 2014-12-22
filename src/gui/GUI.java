@@ -1,12 +1,15 @@
 package gui;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
 
 import controller.Controller;
+import controller.InvalidPathException;
 
 /**
  * Main GUI class that initializes the user interface.
@@ -21,6 +24,10 @@ public class GUI extends JFrame {
 	private JFileChooser fileChooser; 
 	private JTextArea textArea;
 	private JScrollPane scrollPane;
+	private JTextField startUrl;
+	private JTextField targetUrl;
+	private JButton selectTarget;
+	private JButton selectStart;
 
 	/**
 	 * Initializes the GUI of the application
@@ -66,35 +73,109 @@ public class GUI extends JFrame {
 	private void makeContentWindow() {
 		this.initializeFileChooser();
 		
-		JButton open = new JButton("Choose file"); // Button that opens file chooser
-		open.addActionListener(new ActionListener() {
+		JPanel buttonContainer = new JPanel(new GridLayout(3, 1));
+		
+		JLabel startLabel = new JLabel("Start:");
+		startLabel.setPreferredSize(new Dimension(70, startLabel.getPreferredSize().height));
+		JPanel startContainer = new JPanel(new FlowLayout());
+		
+		startUrl = new JTextField();
+		startUrl.setPreferredSize(new Dimension(300, startUrl.getPreferredSize().height));
+		
+		selectStart = new JButton("Browse"); // Button that opens file chooser
+		selectStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 				int returnValue = fileChooser.showOpenDialog(null);
 		        if (returnValue == JFileChooser.APPROVE_OPTION) {
-		          File selectedFile = fileChooser.getSelectedFile();
-		          Controller.getInstance().choosePath(selectedFile.toPath());
+		          Path selectedPath = fileChooser.getSelectedFile().toPath();
+		          //Controller.getInstance().setStart(selectedPath);
+		          startUrl.setText(selectedPath.toString());
 		        } 
 			}
 		});
+		startContainer.add(startLabel);
+		startContainer.add(startUrl);
+		startContainer.add(selectStart);
+		buttonContainer.add(startContainer);
+		
+		JLabel destinationLabel = new JLabel("Destination:");
+		destinationLabel.setPreferredSize(new Dimension(70, destinationLabel.getPreferredSize().height));
+		JPanel destinationContainer = new JPanel(new FlowLayout());
+		
+		targetUrl = new JTextField();
+		targetUrl.setPreferredSize(new Dimension(300, targetUrl.getPreferredSize().height));
+		
+		selectTarget = new JButton("Browse"); // Button that opens file chooser
+		selectTarget.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				int returnValue = fileChooser.showOpenDialog(null);
+		        if (returnValue == JFileChooser.APPROVE_OPTION) {
+		          Path selectedPath = fileChooser.getSelectedFile().toPath();
+		          //Controller.getInstance().setTarget(selectedPath);
+		          targetUrl.setText(selectedPath.toString());
+		        } 
+			}
+		});
+		destinationContainer.add(destinationLabel);
+		destinationContainer.add(targetUrl);
+		destinationContainer.add(selectTarget);
+		buttonContainer.add(destinationContainer);
+		
+		JPanel beginContainer = new JPanel(new FlowLayout());
+		JButton startButton = new JButton("Start"); // Button that opens file chooser
+		startButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setPaths();
+				
+				try {
+					Controller.getInstance().start();
+				} catch(InvalidPathException ex){
+					JOptionPane.showMessageDialog(null, ex.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
+				}
+			}
+		});
+		JButton stopButton = new JButton("Stop"); // Button that opens file chooser
+		stopButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Controller.getInstance().stop();
+			}
+		});
+		beginContainer.add(startButton);
+		beginContainer.add(stopButton);
+		buttonContainer.add(beginContainer);
 		
 
-		this.textArea = new JTextArea("Choose a file or directory. \n\n", 10, 30);
+		this.textArea = new JTextArea(10, 30);
 		this.textArea.setEditable(false);
 		this.textArea.setWrapStyleWord(true);
 		
 		this.scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
-		this.contents.add(open, BorderLayout.NORTH);
+		this.contents.add(buttonContainer, BorderLayout.NORTH);
 		this.contents.add(scrollPane, BorderLayout.CENTER);
 	}
 	
+	private void setPaths() {
+		if(!startUrl.getText().trim().isEmpty()) {
+			Controller.getInstance().setStart(Paths.get(startUrl.getText().trim()));
+		} else {
+			Controller.getInstance().setStart(null);
+		}
+		
+		if(!targetUrl.getText().trim().isEmpty()) {
+			Controller.getInstance().setTarget(Paths.get(targetUrl.getText().trim()));
+		} else {
+			Controller.getInstance().setTarget(null);
+		}
+	}
+
 	/**
 	 * Creates and sets all the options for the FileChooser
 	 */
-	private void initializeFileChooser()
-	{
+	private void initializeFileChooser() {
 		this.fileChooser = new JFileChooser();
-		this.fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package helpsers;
+package helpers;
 
 import java.sql.*;
 
@@ -45,7 +45,7 @@ public class MySQL {
 	 * @param query
 	 * @return
 	 */
-	public boolean push(String query){
+	public boolean push(String query) {
 		Statement stmt;
 		int result = -1;
 		try {
@@ -77,7 +77,7 @@ public class MySQL {
 	 * Opens and returns a connection to the database
 	 * @return
 	 */
-	private Connection connect(){
+	private Connection connect() {
 		try{
 			Class.forName(JDBC_DRIVER);
 			return DriverManager.getConnection(DB_URL,USER,PASS);
