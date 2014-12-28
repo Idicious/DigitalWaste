@@ -1,6 +1,5 @@
 package gui;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.awt.*;
@@ -9,7 +8,6 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import controller.Controller;
-import controller.InvalidPathException;
 
 /**
  * Main GUI class that initializes the user interface.
@@ -128,12 +126,7 @@ public class GUI extends JFrame {
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setPaths();
-				
-				try {
-					Controller.getInstance().start();
-				} catch(InvalidPathException ex){
-					JOptionPane.showMessageDialog(null, ex.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
-				}
+				Controller.getInstance().start();
 			}
 		});
 		JButton stopButton = new JButton("Stop"); // Button that opens file chooser
@@ -227,5 +220,9 @@ public class GUI extends JFrame {
 			   message += "to the database containing the copied path and extension group. \n";
 			    
 		JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	public void displayError(String message) {
+		JOptionPane.showMessageDialog(null, message, "Warning", JOptionPane.WARNING_MESSAGE);
 	}
 }

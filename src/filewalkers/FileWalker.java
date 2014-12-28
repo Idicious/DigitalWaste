@@ -6,8 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 
 import controller.Controller;
+import errors.Error;
 
 /**
  * Abstract class that when implemented describes what to do with with files and
@@ -61,6 +63,15 @@ public abstract class FileWalker implements Runnable
 	 */
 	private void walkFiles() throws IOException 
 	{
+		ArrayList<Error> errors = isValid();
+		if(errors != null && errors.size() > 0) {
+			Controller.getInstance().displayErrors(errors);
+			this.handler.remove(this); 
+			return;
+		}
+		
+		this.onStart();
+		
 		Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
 			
 			/**
@@ -182,7 +193,17 @@ public abstract class FileWalker implements Runnable
 	protected abstract FileVisitResult onVisitFileFailed(Path file, IOException exc);
 	
 	/**
+	 * Method executed emediatly before FileWalk starts
+	 */
+	protected abstract Object onStart();
+	
+	/**
 	 * Method to be executed after filewalker is complete
 	 */
 	protected abstract Object onComplete();
+	
+	/**
+	 * Checks for errors. Can either return null or empty array if no errors are found.
+	 */
+	protected abstract ArrayList<Error> isValid();
 }

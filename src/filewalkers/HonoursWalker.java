@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import controller.Controller;
+import errors.Error;
+import errors.PathError;
 
 /**
  * Copies files with extension contained in acceptedFormats HashMap to given
@@ -39,11 +41,6 @@ public class HonoursWalker extends FileWalker {
 	public HonoursWalker(Path start, Path target) {
 		setStart(start);
 		setTarget(target);
-
-		this.db = new MySQL();
-
-		this.initializeAcceptedFormats();
-		Controller.getInstance().outputLine("\n-- starting --\n");
 	}
 
 	@Override
@@ -159,6 +156,27 @@ public class HonoursWalker extends FileWalker {
 		docFormats.add(".txt");
 		docFormats.add(".doc");
 		docFormats.add(".pdf");
+	}
+
+	@Override
+	protected ArrayList<Error> isValid() {
+		ArrayList<Error> errors = new ArrayList<Error>();
+		
+		if(getStart() == null) errors.add(new PathError("You must select a start"));
+		else if(!getStart().toFile().exists()) errors.add(new PathError("Start path does not exist")) ;
+		
+		if(getTarget() == null) errors.add(new PathError("You must select a target"));
+		else if(!getTarget().toFile().exists()) errors.add(new PathError("Target path does not exist"));
+		
+		return errors;
+	}
+
+	@Override
+	protected Object onStart() {
+		this.db = new MySQL();
+		this.initializeAcceptedFormats();
+		Controller.getInstance().outputLine("\n-- starting --\n");
+		return null;
 	}
 
 }

@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 
 import controller.Controller;
+import errors.Error;
+import errors.PathError;
 
 /**
  * Basic implementation of FileWalker that simply prints to the console all names of 
@@ -19,8 +22,6 @@ public class ExampleWalker extends FileWalker {
 	
 	public ExampleWalker(Path start) {
 		setStart(start);
-		
-		Controller.getInstance().outputLine("\n-- starting --\n");
 	}
 
 	@Override
@@ -49,6 +50,22 @@ public class ExampleWalker extends FileWalker {
 	@Override
 	protected Object onComplete() {
 		Controller.getInstance().outputLine("\n --operation complete-- \n");
+		return null;
+	}
+
+	@Override
+	protected ArrayList<Error> isValid() {
+		ArrayList<Error> errors = new ArrayList<Error>();
+		
+		if(getStart() == null) errors.add(new PathError("You must select a start"));
+		else if(!getStart().toFile().exists()) errors.add(new PathError("Start path does not exist")) ;
+		
+		return errors;
+	}
+
+	@Override
+	protected Object onStart() {
+		Controller.getInstance().outputLine("\n-- starting --\n");
 		return null;
 	}
 

@@ -1,7 +1,9 @@
 package controller;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 
+import errors.Error;
 import filewalkers.*;
 import gui.*;
 
@@ -38,7 +40,7 @@ public class Controller {
 	{
 		if(initialized) {
 			if(controller == null) {
-				controller = new HonoursController();
+				controller = new Controller();
 			}
 			
 			return controller;
@@ -50,16 +52,9 @@ public class Controller {
 	/**
 	 * Starts the walker
 	 */
-	public void start() throws InvalidPathException 
+	public void start() 
 	{
-		this.validate();
-		thisWalker.walk(new HonoursWalker(startPath, targetPath));
-	}
-	
-	protected void validate() throws InvalidPathException
-	{
-		if(startPath == null) throw new InvalidPathException("You must select a start location");
-		if(!startPath.toFile().exists()) throw new InvalidPathException("Start path does not exist");
+		thisWalker.walk(new ExampleWalker(startPath));
 	}
 	
 	/**
@@ -78,6 +73,15 @@ public class Controller {
 		} else {
 			throw new IllegalStateException("Both GUI and Walker handler must be set");
 		}
+	}
+	
+	public void displayErrors(ArrayList<Error> errors) {
+		String errorMessage = "";
+		for(Error error : errors) {
+			errorMessage += error.getMessage() + "\n";
+		}
+		
+		thisGui.displayError(errorMessage);
 	}
 	
 	public Path getStart() {
